@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>قیمت لحظه‌ای تتر، رمزارز و طلا</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400&family=Vazirmatn:wght@400;500;600;700&display=swap"
+    />
+    <link rel="stylesheet" href="hark.css" />
+    <link rel="stylesheet" href="hark-hero.css" />
+    <style>
+      :root { --sans: "Vazirmatn", "Geist", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif; }
+      .x-ltr { direction: ltr; unicode-bidi: isolate; display: inline-block; }
+
+      /* live status */
+      .x-status { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; font: var(--type-small); }
+      .x-live { display: inline-flex; align-items: center; gap: 8px; font: var(--type-label); }
+      .x-live::before {
+        content: ""; width: 8px; height: 8px; border-radius: 50%;
+        background: var(--fill-system-green);
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--fill-system-green) 60%, transparent);
+        animation: x-pulse 1.6s var(--ease-out) infinite;
+      }
+      .x-live.is-off::before { background: var(--fill-system-orange); box-shadow: 0 0 0 0 color-mix(in srgb, var(--fill-system-orange) 60%, transparent); }
+      @keyframes x-pulse { 70% { box-shadow: 0 0 0 7px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+      .x-retry { font: var(--type-tag); color: var(--fill-system-orange); }
+      .x-retry[hidden] { display: none; }
+
+      /* big quote */
+      .x-quote { display: grid; gap: 6px; }
+      .x-quote__label { font: var(--type-label); color: var(--text-secondary); }
+      .x-quote__fig { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+      .x-big { font: var(--type-numeral); font-weight: var(--weight-medium); font-variant-numeric: tabular-nums; }
+      .x-unit { font: var(--type-body); color: var(--text-secondary); }
+      .x-sub { font: var(--type-small); color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+      .x-duo { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+      .x-panel { padding: 20px 22px; border-radius: var(--r-l); background: var(--fill-tertiary); }
+      .x-quote, .x-panel, .x-quote__fig > * { min-width: 0; }
+      .x-big { overflow-wrap: anywhere; }
+      @media (max-width: 899px) {
+        .x-big { font-size: 40px; }
+        .x-duo { grid-template-columns: minmax(0, 1fr); }
+      }
+      @media (max-width: 599px) {
+        .x-big { font-size: 36px; }
+        .nav .seg a { min-width: var(--tap); justify-content: center; }
+      }
+
+      /* change indicator */
+      .x-chg {
+        display: inline-flex; align-items: center; gap: 4px;
+        padding: 3px 10px; border-radius: var(--r-pill);
+        font: var(--type-tag); font-variant-numeric: tabular-nums; white-space: nowrap;
+        background: var(--fill-tertiary); color: var(--text-secondary);
+      }
+      .x-chg.is-up { color: color-mix(in srgb, var(--fill-system-green) 72%, var(--text-primary)); background: color-mix(in srgb, var(--fill-system-green) 14%, transparent); }
+      .x-chg.is-down { color: color-mix(in srgb, var(--fill-system-red) 80%, var(--text-primary)); background: color-mix(in srgb, var(--fill-system-red) 12%, transparent); }
+      .x-chg.is-up::before { content: "▲"; font-size: 9px; }
+      .x-chg.is-down::before { content: "▼"; font-size: 9px; }
+
+      /* flash on change */
+      .x-val { border-radius: var(--r-s); padding-inline: 4px; margin-inline: -4px; }
+      .x-val.is-rise { animation: x-rise 1.4s var(--ease-out); }
+      .x-val.is-fall { animation: x-fall 1.4s var(--ease-out); }
+      @keyframes x-rise { from { background: color-mix(in srgb, var(--fill-system-green) 28%, transparent); } to { background: transparent; } }
+      @keyframes x-fall { from { background: color-mix(in srgb, var(--fill-system-red) 24%, transparent); } to { background: transparent; } }
+      @media (prefers-reduced-motion: reduce) {
+        .x-live::before, .x-val.is-rise, .x-val.is-fall { animation: none; }
+      }
+
+      /* crypto board */
+      .x-board { display: grid; }
+      .x-row {
+        display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1.2fr) 96px;
+        gap: 12px; align-items: center; padding: 14px 0;
+        border-bottom: 1px solid var(--stroke-secondary);
+      }
+      .x-row:last-child { border-bottom: 0; }
+      .x-row--head { padding-top: 0; padding-bottom: 8px; font: var(--type-tag); color: var(--text-secondary); border-bottom-color: var(--stroke-primary); }
+      .x-row > :last-child { justify-self: end; }
+      .x-row > * { min-width: 0; }
+      @media (max-width: 899px) { .x-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.2fr) auto; } .x-price { white-space: normal; } }
+      .x-name { font: var(--type-body-strong); }
+      .x-name small { display: block; font: var(--type-caption); color: var(--text-secondary); letter-spacing: 0.04em; }
+      .x-price { font: var(--type-body-strong); font-variant-numeric: tabular-nums; white-space: nowrap; }
+      .x-price small { display: block; font: var(--type-caption); color: var(--text-secondary); }
+      @media (max-width: 599px) {
+        .x-row--head { display: none; }
+        .x-row { grid-template-columns: minmax(0, 1fr) auto; gap: 8px 16px; }
+        .x-row > .x-name { grid-column: 1; grid-row: 1; }
+        .x-row > .x-chg-cell { grid-column: 2; grid-row: 1; justify-self: end; }
+        .x-row > .x-usd { grid-column: 1; grid-row: 2; }
+        .x-row > .x-irt { grid-column: 2; grid-row: 2; justify-self: end; text-align: left; }
+        .x-price { font-size: var(--size-lede, 17px); }
+      }
+
+      /* free-market cards (tgju) */
+      .x-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+      @media (max-width: 899px) { .x-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+      @media (max-width: 599px) { .x-grid { grid-template-columns: minmax(0, 1fr); } }
+      .x-card { display: grid; gap: 6px; align-content: start; min-width: 0; }
+      .x-card__top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 10px; }
+      .x-card__name { font: var(--type-body-strong); }
+      .x-mid { font: var(--type-title); font-weight: var(--weight-medium); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+      .x-card .x-quote__fig { gap: 4px 10px; }
+      .x-meta { display: grid; gap: 2px; padding-top: 8px; margin-top: 4px; border-top: 1px solid var(--stroke-secondary); font: var(--type-caption); color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+      .x-meta > * { min-width: 0; overflow-wrap: anywhere; }
+      .x-meta b { font-weight: var(--weight-medium); color: var(--text-primary); }
+      .x-src { font: var(--type-caption); color: var(--text-secondary); }
+      .x-src[hidden] { display: none; }
+      .brand-band { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:6px 18px; padding:18px 16px; margin:12px auto; max-width:1100px; border-radius:20px; background:linear-gradient(135deg,#0b3d91,#1e88e5 55%,#26c6da); color:#fff; text-align:center; box-shadow:0 8px 24px rgba(11,61,145,.25); }
+      .brand-band__en { font-size:clamp(26px,6vw,44px); font-weight:800; letter-spacing:.02em; direction:ltr; }
+      .brand-band__fa { font-size:clamp(20px,4.5vw,32px); font-weight:700; }
+      .brand-band__dot { opacity:.6; font-size:24px; }
+    </style>
+  </head>
+  <body>
+    <div class="page" id="top">
+      <header class="nav glass" data-auto></header>
+      <div class="brand-band" role="banner"><span class="brand-band__en">🐋 it's whale</span><span class="brand-band__dot">•</span><span class="brand-band__fa">عارف نصیرزاده</span></div>
+      <main class="main">
+        <section class="hero">
+          <div class="hero__copy">
+            <p class="hero__eyebrow"><span class="x-live" id="live">زنده</span></p>
+            <h1>قیمت لحظه‌ای تتر، رمزارز و طلا</h1>
+            <p class="hero__sub">تتر و رمزارز هر ۵ ثانیه، ارز و طلا و سکه هر ۱ دقیقه</p>
+            <p class="hero__meta x-status" aria-live="polite">
+              <span>آخرین به‌روزرسانی: <span class="x-ltr" id="updated">—</span></span>
+              <span class="x-retry" id="retry" hidden>در حال اتصال مجدد…</span>
+              <span>ارز و طلا: <span class="x-ltr" id="updated2">—</span></span>
+              <span class="x-retry" id="retry2" hidden>ارز و طلا: در حال اتصال مجدد…</span>
+            </p>
+          </div>
+        </section>
+
+        <section class="section" id="usdt" data-nav="تتر">
+          <div class="head">
+            <p class="head__eyebrow">تتر · USDT</p>
+            <h2>قیمت تتر به تومان</h2>
+          </div>
+          <div class="pair">
+            <div class="x-quote">
+              <p class="x-quote__label">آخرین قیمت</p>
+              <div class="x-quote__fig">
+                <span class="x-big x-val" data-k="usdt-rls" data-f="irt">—</span>
+                <span class="x-unit">تومان</span>
+                <span class="x-chg" data-chg="usdt-rls">—</span>
+              </div>
+              <p class="x-sub"><span class="x-val" data-k="usdt-rls" data-f="rls">—</span> ریال</p>
+              <p class="fineprint">تتر نزدیک‌ترین معیار لحظه‌ای به دلار آزاد است.</p>
+            </div>
+            <div class="breakdown">
+              <dl>
+                <div class="row"><dt>بیشترین ۲۴ ساعت</dt><dd><span class="x-val" data-k="usdt-rls" data-field="dayHigh" data-f="irt">—</span> <small class="muted">تومان</small></dd></div>
+                <div class="row"><dt>کمترین ۲۴ ساعت</dt><dd><span class="x-val" data-k="usdt-rls" data-field="dayLow" data-f="irt">—</span> <small class="muted">تومان</small></dd></div>
+                <div class="row"><dt>بهترین پیشنهاد خرید</dt><dd><span class="x-val" data-k="usdt-rls" data-field="bestBuy" data-f="irt">—</span> <small class="muted">تومان</small></dd></div>
+                <div class="row"><dt>بهترین پیشنهاد فروش</dt><dd><span class="x-val" data-k="usdt-rls" data-field="bestSell" data-f="irt">—</span> <small class="muted">تومان</small></dd></div>
+              </dl>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="market" data-nav="ارز و سکه">
+          <div class="head">
+            <p class="head__eyebrow">tgju · هر ۱ دقیقه</p>
+            <h2>ارز، طلا و سکه (بازار آزاد)</h2>
+            <p class="head__sub">قیمت‌ها فقط در ساعات کار بازار ایران تغییر می‌کنند.</p>
+          </div>
+          <div class="x-grid" id="fx"></div>
+        </section>
+
+        <section class="section" id="gold" data-nav="اونس طلا">
+          <div class="head">
+            <p class="head__eyebrow">gold-api و نوبیتکس</p>
+            <h2>اونس جهانی طلا</h2>
+          </div>
+          <div class="x-duo">
+            <div class="x-panel x-quote">
+              <p class="x-quote__label">به دلار <span class="x-src" id="ozsrc" hidden>(بر پایه XAUT)</span></p>
+              <div class="x-quote__fig">
+                <span class="x-big x-val x-ltr" id="oz-usd">—</span>
+              </div>
+            </div>
+            <div class="x-panel x-quote">
+              <p class="x-quote__label">به تومان</p>
+              <div class="x-quote__fig">
+                <span class="x-big x-val" id="oz-irt">—</span>
+                <span class="x-unit">تومان</span>
+              </div>
+              <p class="x-sub">قیمت دلاری × تتر نوبیتکس</p>
+            </div>
+          </div>
+          <div class="breakdown">
+            <dl>
+              <div class="row">
+                <dt>اونس (توکن XAUT در نوبیتکس) <small><span class="x-chg" data-chg="xaut-usdt">—</span></small></dt>
+                <dd><span class="x-val x-ltr" data-k="xaut-usdt" data-f="usd">—</span></dd>
+              </div>
+              <div class="row">
+                <dt>XAUT به تومان <small><span class="x-chg" data-chg="xaut-rls">—</span></small></dt>
+                <dd><span class="x-val" data-k="xaut-rls" data-f="irt">—</span> <small class="muted">تومان</small></dd>
+              </div>
+            </dl>
+            <p class="fineprint">هر توکن XAUT (تتر گلد) معادل یک انس تروی طلاست. زمان gold-api: <span class="x-ltr" id="oz-ts">—</span></p>
+          </div>
+        </section>
+
+        <section class="section" id="crypto" data-nav="رمزارزها">
+          <div class="head">
+            <h2>رمزارزها</h2>
+          </div>
+          <div class="x-board" id="board">
+            <div class="x-row x-row--head" aria-hidden="true">
+              <span>نام</span><span>دلار</span><span>تومان</span><span>تغییر ۲۴ ساعت</span>
+            </div>
+          </div>
+        </section>
+      </main>
+      <div class="brand-band" role="banner"><span class="brand-band__en">🐋 it's whale</span><span class="brand-band__dot">•</span><span class="brand-band__fa">عارف نصیرزاده</span></div>
+      <footer class="foot">
+        <p>منبع: نوبیتکس، tgju، gold-api — قیمت‌ها صرفاً جهت اطلاع است.</p>
+        <nav aria-label="بازگشت به بخش‌ها" data-auto></nav>
+        <a class="badge" href="https://hark.com/" target="_blank" rel="noopener"
+          ><span class="hark-mark"></span><span>built by hark</span></a
+        >
+      </footer>
+    </div>
+    <script src="hark.js"></script>
+    <script>
+      (function () {
+        var COINS = [
+          ["btc", "بیت‌کوین", "BTC"],
+          ["eth", "اتریوم", "ETH"],
+          ["bnb", "بی‌ان‌بی", "BNB"],
+          ["sol", "سولانا", "SOL"],
+          ["xrp", "ریپل", "XRP"],
+          ["doge", "دوج‌کوین", "DOGE"],
+          ["trx", "ترون", "TRX"],
+          ["ada", "کاردانو", "ADA"]
+        ];
+        var NOBITEX = "https://apiv2.nobitex.ir/market/stats?srcCurrency=usdt,btc,eth,bnb,sol,xrp,doge,trx,ada,xaut&dstCurrency=rls,usdt";
+        var BIN_MAP = { BTCUSDT: "btc", ETHUSDT: "eth", BNBUSDT: "bnb", SOLUSDT: "sol", XRPUSDT: "xrp", DOGEUSDT: "doge", TRXUSDT: "trx", ADAUSDT: "ada", PAXGUSDT: "xaut" };
+        var BINANCE = "https://data-api.binance.vision/api/v3/ticker/24hr?symbols=" + encodeURIComponent(JSON.stringify(Object.keys(BIN_MAP)));
+
+        // Build the crypto rows.
+        var board = document.getElementById("board");
+        COINS.forEach(function (c) {
+          var row = document.createElement("div");
+          row.className = "x-row";
+          row.innerHTML =
+            '<div class="x-name">' + c[1] + "<small>" + c[2] + "</small></div>" +
+            '<div class="x-price x-usd"><span class="x-val x-ltr" data-k="' + c[0] + '-usdt" data-f="usd">—</span></div>' +
+            '<div class="x-price x-irt"><span><span class="x-val" data-k="' + c[0] + '-rls" data-f="irt">—</span> <span class="x-unit">تومان</span></span>' +
+            '<small><span class="x-val" data-k="' + c[0] + '-rls" data-f="rls">—</span> ریال</small></div>' +
+            '<div class="x-chg-cell"><span class="x-chg" data-chg="' + c[0] + '-usdt">—</span></div>';
+          board.appendChild(row);
+        });
+
+        function fa(n, min, max) {
+          return n.toLocaleString("fa-IR", { minimumFractionDigits: min, maximumFractionDigits: max });
+        }
+        function fmt(v, f) {
+          if (f === "irt") return fa(Math.round(v / 10), 0, 0);
+          if (f === "rls") return fa(Math.round(v), 0, 0);
+          // usd
+          if (v >= 1000) return "$" + fa(v, 0, v >= 10000 ? 0 : 2);
+          if (v >= 1) return "$" + fa(v, 2, 2);
+          return "$" + fa(v, 2, 4);
+        }
+        function fmtChg(p) {
+          return '<span class="x-ltr">' + p.toLocaleString("fa-IR", { signDisplay: "exceptZero", minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "٪</span>";
+        }
+
+        var last = {}; // last numeric value per element key
+        var tz = new Intl.DateTimeFormat("fa-IR", { timeZone: "Asia/Tehran", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+
+        function render(stats) {
+          document.querySelectorAll(".x-val[data-k]").forEach(function (el) {
+            var s = stats[el.dataset.k];
+            if (!s) return;
+            var field = el.dataset.field || "latest";
+            var v = parseFloat(s[field]);
+            if (!isFinite(v) || v <= 0) return;
+            var id = el.dataset.k + "|" + field + "|" + el.dataset.f;
+            var prev = last[id];
+            var text = fmt(v, el.dataset.f);
+            if (el.textContent !== text) el.textContent = text;
+            if (prev !== undefined && prev !== v) {
+              el.classList.remove("is-rise", "is-fall");
+              void el.offsetWidth;
+              el.classList.add(v > prev ? "is-rise" : "is-fall");
+            }
+            last[id] = v;
+          });
+          document.querySelectorAll(".x-chg[data-chg]").forEach(function (el) {
+            var s = stats[el.dataset.chg];
+            if (!s) return;
+            var p = parseFloat(s.dayChange);
+            if (!isFinite(p)) return;
+            el.classList.toggle("is-up", p > 0);
+            el.classList.toggle("is-down", p < 0);
+            el.innerHTML = fmtChg(p);
+          });
+          var u = stats["usdt-rls"] && parseFloat(stats["usdt-rls"].latest);
+          if (isFinite(u) && u > 0) usdtRls = u;
+          var xu = stats["xaut-usdt"] && parseFloat(stats["xaut-usdt"].latest);
+          if (isFinite(xu) && xu > 0) xautUsd = xu;
+          if (typeof recompute === "function") recompute();
+        }
+        var usdtRls = 0, xautUsd = 0;
+
+        function getJSON(url) {
+          var ctrl = new AbortController();
+          var t = setTimeout(function () { ctrl.abort(); }, 8000);
+          return fetch(url, { signal: ctrl.signal, cache: "no-store" })
+            .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+            .finally(function () { clearTimeout(t); });
+        }
+
+        var liveEl = document.getElementById("live");
+        var retryEl = document.getElementById("retry");
+        var updEl = document.getElementById("updated");
+        function stamp() { updEl.textContent = tz.format(new Date()); }
+        function setOnline(ok) {
+          retryEl.hidden = ok;
+          liveEl.classList.toggle("is-off", !ok);
+        }
+
+        function fallback() {
+          return getJSON(BINANCE).then(function (arr) {
+            var stats = {};
+            arr.forEach(function (t) {
+              var k = BIN_MAP[t.symbol];
+              if (k) stats[k + "-usdt"] = { latest: t.lastPrice, dayChange: t.priceChangePercent };
+            });
+            render(stats);
+            stamp();
+          });
+        }
+
+        var pending = false;
+        function tick() {
+          if (pending) return;
+          pending = true;
+          getJSON(NOBITEX)
+            .then(function (d) {
+              if (!d || d.status !== "ok" || !d.stats) throw new Error("bad");
+              render(d.stats);
+              stamp();
+              setOnline(true);
+            })
+            .catch(function () {
+              setOnline(false);
+              return fallback().catch(function () {});
+            })
+            .finally(function () { pending = false; });
+        }
+
+        tick();
+        setInterval(tick, 5000);
+
+        /* ---- Free market (tgju) and world gold (gold-api), every 60s ---- */
+        var FX = [
+          ["price_dollar_rl", "دلار آزاد"],
+          ["price_eur", "یورو"],
+          ["geram18", "طلای ۱۸ عیار (هر گرم)"],
+          ["sekee", "سکه امامی"],
+          ["nim", "نیم سکه"],
+          ["rob", "ربع سکه"]
+        ];
+        var TGJU_HOSTS = ["call2", "call3", "call4"];
+        var hostIdx = 0;
+        var fxRial = {}; // last rial price per key
+        var ozUsd = 0;
+        var fxBox = document.getElementById("fx");
+        FX.forEach(function (f) {
+          var card = document.createElement("article");
+          card.className = "x-panel x-card";
+          card.id = "fx-" + f[0];
+          card.innerHTML =
+            '<div class="x-card__top"><h3 class="x-card__name">' + f[1] + '</h3><span class="x-chg" data-fx="chg">—</span></div>' +
+            '<div class="x-quote__fig"><span class="x-mid x-val" data-fx="irt">—</span><span class="x-unit">تومان</span></div>' +
+            '<p class="x-sub"><span data-fx="rls">—</span> ریال</p>' +
+            '<div class="x-meta"><span>≈ دلار بر پایه تتر: <b class="x-ltr" data-fx="usd">—</b></span>' +
+            '<span>زمان قیمت: <span data-fx="ts">—</span></span></div>';
+          fxBox.appendChild(card);
+        });
+
+        function flash(el, prev, v) {
+          if (prev !== undefined && prev !== v) {
+            el.classList.remove("is-rise", "is-fall");
+            void el.offsetWidth;
+            el.classList.add(v > prev ? "is-rise" : "is-fall");
+          }
+        }
+        function setText(el, t) { if (el && el.textContent !== t) el.textContent = t; }
+        var dateFmt = new Intl.DateTimeFormat("fa-IR", { timeZone: "Asia/Tehran", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false });
+        function faDigits(s) { return String(s).replace(/\d/g, function (d) { return "۰۱۲۳۴۵۶۷۸۹"[d]; }); }
+        function fmtTs(s) {
+          if (!s) return null;
+          var d = new Date(String(s).trim().replace(" ", "T") + "+03:30");
+          return isNaN(d) ? faDigits(s) : dateFmt.format(d);
+        }
+
+        function recompute() {
+          FX.forEach(function (f) {
+            var r = fxRial[f[0]];
+            if (!r || !usdtRls) return;
+            var el = document.querySelector("#fx-" + f[0] + ' [data-fx="usd"]');
+            setText(el, fmt(r / usdtRls, "usd"));
+          });
+          var usd = ozUsd || xautUsd;
+          if (usd) {
+            var uEl = document.getElementById("oz-usd");
+            var prevU = last["oz|usd"];
+            setText(uEl, fmt(usd, "usd"));
+            flash(uEl, prevU, usd);
+            last["oz|usd"] = usd;
+            document.getElementById("ozsrc").hidden = !!ozUsd;
+            if (usdtRls) {
+              var iEl = document.getElementById("oz-irt");
+              var irt = Math.round(usd * usdtRls / 10);
+              var prevI = last["oz|irt"];
+              setText(iEl, fa(irt, 0, 0));
+              flash(iEl, prevI, irt);
+              last["oz|irt"] = irt;
+            }
+          }
+        }
+
+        function renderFx(cur) {
+          var any = false;
+          FX.forEach(function (f) {
+            var it = cur[f[0]];
+            if (!it) return;
+            var rial = parseFloat(String(it.p).replace(/[^\d.]/g, ""));
+            if (!isFinite(rial) || rial <= 0) return;
+            any = true;
+            var card = document.getElementById("fx-" + f[0]);
+            var irtEl = card.querySelector('[data-fx="irt"]');
+            flash(irtEl, fxRial[f[0]], rial);
+            fxRial[f[0]] = rial;
+            setText(irtEl, fmt(rial, "irt"));
+            setText(card.querySelector('[data-fx="rls"]'), fmt(rial, "rls"));
+            var dp = parseFloat(it.dp);
+            var chg = card.querySelector('[data-fx="chg"]');
+            if (isFinite(dp)) {
+              var up = it.dt === "high", down = it.dt === "low";
+              var signed = down ? -Math.abs(dp) : up ? Math.abs(dp) : dp;
+              chg.classList.toggle("is-up", up);
+              chg.classList.toggle("is-down", down);
+              chg.innerHTML = fmtChg(signed);
+            }
+            var ts = fmtTs(it.ts);
+            if (ts) setText(card.querySelector('[data-fx="ts"]'), ts);
+          });
+          if (!any) throw new Error("empty");
+          recompute();
+        }
+
+        var updEl2 = document.getElementById("updated2");
+        var retryEl2 = document.getElementById("retry2");
+        function tgjuTry(n) {
+          var host = TGJU_HOSTS[hostIdx];
+          return getJSON("https://" + host + ".tgju.org/ajax.json")
+            .then(function (d) {
+              if (!d || !d.current) throw new Error("bad");
+              renderFx(d.current);
+            })
+            .catch(function (e) {
+              hostIdx = (hostIdx + 1) % TGJU_HOSTS.length;
+              if (n + 1 < TGJU_HOSTS.length) return tgjuTry(n + 1);
+              throw e;
+            });
+        }
+        var fxPending = false;
+        function fxTick() {
+          if (fxPending) return;
+          fxPending = true;
+          tgjuTry(0)
+            .then(function () { updEl2.textContent = tz.format(new Date()); retryEl2.hidden = true; })
+            .catch(function () { retryEl2.hidden = false; })
+            .finally(function () { fxPending = false; });
+        }
+
+        var ozPending = false;
+        function ozTick() {
+          if (ozPending) return;
+          ozPending = true;
+          getJSON("https://api.gold-api.com/price/XAU")
+            .then(function (d) {
+              var p = d && parseFloat(d.price);
+              if (!isFinite(p) || p <= 0) throw new Error("bad");
+              ozUsd = p;
+              if (d.updatedAt) {
+                var t = new Date(d.updatedAt);
+                setText(document.getElementById("oz-ts"), isNaN(t) ? faDigits(d.updatedAt) : dateFmt.format(t));
+              }
+              recompute();
+            })
+            .catch(function () {})
+            .finally(function () { ozPending = false; });
+        }
+
+        fxTick();
+        ozTick();
+        setInterval(fxTick, 60000);
+        setInterval(ozTick, 60000);
+      })();
+    </script>
+  </body>
+</html>
